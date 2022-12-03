@@ -1,5 +1,18 @@
 import numpy as np
+from scipy.linalg import inv
 from scipy.ndimage import shift
+
+
+def get_h(output_signal: np.ndarray,
+          conv_matrix: np.ndarray) -> np.ndarray:
+
+    dim_msg = "Dimensão de matriz de convolução deve ser igual ao tamanho da saída"
+
+    assert len(conv_matrix) == len(output_signal), dim_msg
+
+    h = inv(conv_matrix) @ output_signal
+
+    return h
 
 
 def create_convolution_matrix(input_signal: np.ndarray,

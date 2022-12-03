@@ -5,9 +5,12 @@ import scipy.io as io
 
 def get_signal(path: str) -> np.ndarray:
 
-    signal = io.loadmat(path)
+    try:
+        signal = io.loadmat(path)["x"]
+    except KeyError:
+        signal = io.loadmat(path)["u"]
 
-    return signal["x"]
+    return signal
 
 
 def get_data(path: str) -> dict:
