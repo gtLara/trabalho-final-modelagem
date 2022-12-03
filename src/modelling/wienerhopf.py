@@ -13,7 +13,7 @@ def get_autocorr(signal: np.ndarray) -> np.ndarray:
 def get_crosscorr(signal_a: np.ndarray,
                   signal_b: np.ndarray) -> np.ndarray:
 
-    crosscorr = get_crosscorr(signal_a, signal_b)
+    crosscorr = np.correlate(signal_a, signal_b, mode="full")
 
     return crosscorr
 
