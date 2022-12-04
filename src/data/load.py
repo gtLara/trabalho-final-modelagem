@@ -16,10 +16,12 @@ def get_val_signal(path: str) -> np.ndarray:
 def get_estimation_signal(path: str) -> dict:
 
     x_signal = io.loadmat(path)["x"]
+    i_signal = io.loadmat(path)["x2"]
     u_signal = io.loadmat(path)["u"]
 
     signal = {"input": u_signal,
-              "output": x_signal}
+              "output": x_signal,
+              "impulse": i_signal}
 
     return signal
 
