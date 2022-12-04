@@ -3,7 +3,7 @@ import glob
 import scipy.io as io
 
 
-def get_signal(path: str) -> np.ndarray:
+def get_val_signal(path: str) -> np.ndarray:
 
     try:
         signal = io.loadmat(path)["x"]
@@ -13,12 +13,28 @@ def get_signal(path: str) -> np.ndarray:
     return signal
 
 
-def get_data(path: str) -> dict:
+def get_estimation_signal(path: str) -> dict:
+
+    x_signal = io.loadmat(path)["x"]
+    u_signal = io.loadmat(path)["u"]
+
+    signal = {"input": u_signal,
+              "output": x_signal}
+
+    return signal
+
+
+def get_data(path: str, val=False) -> dict:
 
     signals = {}
     files = glob.glob(f"{path}/*")
     for file in files:
-        signal = get_signal(file)
+
+        if val:
+            signal = get_val_signal(file)
+        else:
+            signal = get_estimation_signal(file)
+
         signals[file.split("/")[-1]] = signal
 
     return signals
