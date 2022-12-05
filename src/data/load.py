@@ -1,6 +1,7 @@
 import numpy as np
 import glob
 import scipy.io as io
+from sklearn.model_selection import train_test_split as tts
 
 
 def get_val_signal(path: str) -> np.ndarray:
@@ -40,3 +41,27 @@ def get_data(path: str, val=False) -> dict:
         signals[file.split("/")[-1]] = signal
 
     return signals
+
+
+def get_step(label="Ca_var"):
+
+    signals = get_data("data/validation", val=True)
+
+    u, y = signals["Entrada_1"], signals["Ca_var"][:, 0]
+
+    u_est, u_val, y_est, y_val = tts(u, y, test_size=0.25, random_state=42,
+                                     shuffle=False)
+
+    return (u_est, y_est), (u_val, y_val)
+
+
+def get_white(label="Ca_var"):
+
+    signals = get_data("data/estimation", val=False)["Ca_var"]
+
+    u, y = signals["input"], signals["output"][:, 0]
+
+    u_est, u_val, y_est, y_val = tts(u, y, test_size=0.25, random_state=42,
+                                     shuffle=False)
+
+    return (u_est, y_est), (u_val, y_val)
