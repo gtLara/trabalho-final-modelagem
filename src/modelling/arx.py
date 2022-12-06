@@ -6,16 +6,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def visualize_io(time, input_, output, title):
+def visualize_io(time, input_, output, title, fn):
 
     plt.plot(time, input_, color="blue", label="Entrada")
     plt.plot(time, output, color="black", label="Saída")
     plt.title(title)
     plt.legend()
-    plt.show()
+    plt.savefig(fn)
+    plt.close()
 
 
-def visualize_estimation(time, P, P_hat, title, theta_cov, error):
+def visualize_estimation(time, P, P_hat, title, theta_cov, error, fn):
 
     plt.plot(time, P_hat, color="red", linestyle="--", label="Estimativa")
     plt.plot(time, P, color="black", label="Saída Real")
@@ -24,7 +25,8 @@ def visualize_estimation(time, P, P_hat, title, theta_cov, error):
     plt.plot([], alpha=0, label=f"RMSE:{error:.2f}")
     plt.legend()
     plt.title(title)
-    plt.show()
+    plt.savefig(fn)
+    plt.close()
 
 
 def get_regressors(input_, output, AR_order, X_order):
@@ -68,7 +70,7 @@ def get_AIC(n_samples, residue_var, n_params):
     return AIC
 
 
-def get_arx_estimate(time, u, y, ar_order, x_order, visual=True):
+def get_arx_estimate(time, u, y, ar_order, x_order, fn, visual=True):
 
     regressors = get_regressors(u, y, ar_order, x_order)
     theta = get_mq_estimation(regressors, y)
@@ -79,10 +81,10 @@ def get_arx_estimate(time, u, y, ar_order, x_order, visual=True):
     cov = get_param_covariance(theta)
 
     if visual:
-        visualize_io(time, u, y, "Visualização de Dados de Estimação")
+        # visualize_io(time, u, y, "Visualização de Dados de Estimação")
 
         visualize_estimation(time, y, y_hat, "Visualização de Estimação ARX",
-                             cov, error)
+                             cov, error, fn)
 
     residue = y_hat - y
 
@@ -91,10 +93,10 @@ def get_arx_estimate(time, u, y, ar_order, x_order, visual=True):
     return theta, error, residue, AIC
 
 
-def validate_arx_estimate(time, u, y, ar_order, x_order, theta,
+def validate_arx_estimate(time, u, y, ar_order, x_order, theta, fn,
                           free=False):
 
-    visualize_io(time, u, y, "Visualização de Dados de Validação")
+    # visualize_io(time, u, y, "Visualização de Dados de Validação")
 
     if free:
 
@@ -117,12 +119,12 @@ def validate_arx_estimate(time, u, y, ar_order, x_order, theta,
     cov = get_param_covariance(theta)
 
     visualize_estimation(time, y, y_hat, "Visualização de Validação ARX", cov,
-                         error)
+                         error, fn)
 
     return error
 
 
-def analyze_residue(output, input_, residue):
+def analyze_residue(output, input_, residue, fn):
 
     plt.subplot(2, 1, 1)
 
@@ -145,7 +147,28 @@ def analyze_residue(output, input_, residue):
     plt.title("Correlação Cruzada entre Resíduos e Entrada")
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig(fn)
+    plt.close()
+
+
+def analyze_params(theta, ar_order=6, x_order=6):
+
+    x = theta[:x_order]
+    ar = theta[-ar_order:]
+
+    x_roots = np.roots(x)
+    ar_roots = np.roots(ar)
+    print("Raizes")
+    print(f"X: {x_roots}")
+    print(f"AR: {ar_roots}")
+
+    x_mags = [round(r, 2) for r in np.abs(x_roots)]
+    ar_mags = [round(r, 2) for r in np.abs(ar_roots)]
+    print("Abs")
+    print(f"X: {x_mags}")
+    print(f"AR: {ar_mags}")
+
+    return
 
 
 def get_aic_matrix(time, u, y, AIC_range, visual=True):
@@ -167,3 +190,19 @@ def get_aic_matrix(time, u, y, AIC_range, visual=True):
         plt.show()
 
     return AIC_matrix
+
+
+def get_multiple_params(time, u, y, ar_order, x_order, runs):
+
+    ar_thetas = np.zeros((runs, ar_order))
+    x_thetas = np.zeros((runs, x_order))
+
+    for i in range(runs):
+
+        theta, _, _, _ = get_arx_estimate(time, u, y, ar_order, x_order,
+                                          visual=False)
+
+        ar_thetas[i, :] = theta[:x_order]
+        x_thetas[i, :] = theta[-ar_order:]
+
+    return ar_thetas, x_thetas

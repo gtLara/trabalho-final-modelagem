@@ -44,11 +44,13 @@ def get_data(path: str, val=False) -> dict:
     return signals
 
 
-def get_step(label="Ca_var"):
+def get_step(label="Ca_var", variable="temperature"):
+
+    var_index = int(variable != "temperature")
 
     signals = get_data("data/validation", val=True)
 
-    u, y = signals["Entrada_1"], signals["Ca_var"][:, 0]
+    u, y = signals["Entrada_1"], signals["Ca_var"][:, var_index]
 
     u_est, u_val, y_est, y_val = tts(u, y, test_size=0.25, random_state=42,
                                      shuffle=False)
@@ -56,11 +58,13 @@ def get_step(label="Ca_var"):
     return (u_est, y_est), (u_val, y_val)
 
 
-def get_white(label="Ca_var"):
+def get_white(label="Ca_var", variable="temperature"):
+
+    var_index = int(variable != "temperature")
 
     signals = get_data("data/estimation", val=False)["Ca_var"]
 
-    u, y = signals["input"], signals["output"][:, 0]
+    u, y = signals["input"], signals["output"][:, var_index]
 
     u_est, u_val, y_est, y_val = tts(u, y, test_size=0.25, random_state=42,
                                      shuffle=False)
