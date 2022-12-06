@@ -1,5 +1,6 @@
 import numpy as np
 import glob
+from os.path import basename
 import scipy.io as io
 from sklearn.model_selection import train_test_split as tts
 
@@ -38,7 +39,7 @@ def get_data(path: str, val=False) -> dict:
         else:
             signal = get_estimation_signal(file)
 
-        signals[file.split("/")[-1]] = signal
+        signals[basename(file)] = signal
 
     return signals
 
