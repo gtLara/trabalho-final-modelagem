@@ -3,6 +3,7 @@ from statsmodels.tsa.arima.model import ARIMA
 from scipy.ndimage import shift
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def visualize_io(time, input_, output, title):
@@ -121,7 +122,7 @@ def validate_arx_estimate(time, u, y, ar_order, x_order, theta,
     return error
 
 
-def analyze_residue(input_, residue):
+def analyze_residue(output, input_, residue):
 
     plt.subplot(2, 1, 1)
 
@@ -130,6 +131,7 @@ def analyze_residue(input_, residue):
     plt.axhline(-tol, color="black", linestyle="--")
 
     plt.stem(acf(residue, nlags=15))
+    plt.title("Autocorrelação de Resíduos")
 
     plt.subplot(2, 1, 2)
 
@@ -140,5 +142,28 @@ def analyze_residue(input_, residue):
     cross_cor = ccf(residue, input_)[5:21]
 
     plt.stem(cross_cor)
+    plt.title("Correlação Cruzada entre Resíduos e Entrada")
 
+    plt.tight_layout()
     plt.show()
+
+
+def get_aic_matrix(time, u, y, AIC_range, visual=True):
+
+    AIC_matrix = np.zeros((AIC_range, AIC_range))
+
+    for ar_order in range(1, AIC_range + 1):
+        for x_order in range(1, AIC_range + 1):
+
+            theta, est_error, residue, AIC = get_arx_estimate(time, u, y,
+                                                              ar_order,
+                                                              x_order,
+                                                              visual=False)
+
+            AIC_matrix[ar_order-1][x_order-1] = AIC
+
+    if visual:
+        sns.heatmap(AIC_matrix)
+        plt.show()
+
+    return AIC_matrix
